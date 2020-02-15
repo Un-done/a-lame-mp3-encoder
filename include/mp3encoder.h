@@ -6,7 +6,7 @@
 #include <iosfwd>
 #include <stdexcept>
 #include <string>
-#include "lame.h"
+#include "lame/lame.h"
 
 namespace vscharf {
 
