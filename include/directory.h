@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace vscharf {
 
@@ -20,6 +21,7 @@ private:
 };
 
 // ======== functions ========
+std::vector<std::filesystem::path> directory_entries(std::filesystem::path path);
 std::vector<std::string> directory_entries(std::string path);
 // [ argument taken by value as it is modified inside the function ]
 } // namespace vscharf

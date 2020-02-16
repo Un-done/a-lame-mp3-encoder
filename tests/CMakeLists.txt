@@ -9,6 +9,7 @@ set(test_sources
 set(test_target test-lameEnc)
 add_executable("${test_target}" gtest.cpp ${test_sources})
 target_include_directories("${test_target}" SYSTEM PRIVATE ${gtest_SOURCE_DIR}/include)
+target_compile_definitions("${test_target}" PRIVATE "LAME_ENC_TEST_DATA_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/test_data\"")
 target_link_libraries("${test_target}"
     gtest_main gtest
     lameEnc

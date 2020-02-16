@@ -1,36 +1,31 @@
 #include <gtest/gtest.h>
 #include "directory.h"
 
-TEST(lame_enc, directory) {
-#ifdef WINDOWS
-    std::vector<std::string> expected = { "test_data\\.gitignore", "test_data\\empty_dir",
-					  "test_data\\sound.wav", "test_data\\sound1.wav",
-					  "test_data\\sound2.wav" };
-#else
-    std::vector<std::string> expected = {
-      "tests/test_data/.", "tests/test_data/..", "tests/test_data/.gitignore", "tests/test_data/empty_dir",
-      "tests/test_data/sound.wav", "tests/test_data/sound1.wav", "tests/test_data/sound2.wav"};
+#ifndef LAME_ENC_TEST_DATA_DIR
+#define LAME_ENC_TEST_DATA_DIR "tests/test_data"
 #endif
+
+using namespace std::literals::string_literals;
+
+TEST(lame_enc, directory) {
+    std::vector<std::string> expected = {
+      LAME_ENC_TEST_DATA_DIR "/.gitignore",
+      LAME_ENC_TEST_DATA_DIR "/empty_dir",
+      LAME_ENC_TEST_DATA_DIR "/sound.wav",
+      LAME_ENC_TEST_DATA_DIR "/sound1.wav",
+      LAME_ENC_TEST_DATA_DIR "/sound2.wav"};
+
     ASSERT_EQ(true,true);
-    std::vector<std::string> actual = vscharf::directory_entries("tests/test_data");
+    std::vector<std::string> actual = vscharf::directory_entries(std::string(LAME_ENC_TEST_DATA_DIR));
     std::sort(begin(actual), end(actual));
     ASSERT_EQ(expected, actual);
 }
 
 TEST(lame_enc, directory_empty) {
     // assumes the test is called in the project root directory
-#ifdef WINDOWS
-    std::vector<std::string> expected = {};
-#else
-    std::vector<std::string> expected = {
-      "tests/test_data/empty_dir/.", "tests/test_data/empty_dir/.." };
-#endif
+    std::vector<std::string> expected = { };
 
-#ifdef WINDOWS
-    std::vector<std::string> actual = vscharf::directory_entries("test_data\\empty_dir");
-#else
-    std::vector<std::string> actual = vscharf::directory_entries("tests/test_data/empty_dir");
-#endif
+    std::vector<std::string> actual = vscharf::directory_entries(std::string(LAME_ENC_TEST_DATA_DIR "/empty_dir"));
     std::sort(begin(actual), end(actual));
     ASSERT_EQ(expected, actual);
 
@@ -38,6 +33,6 @@ TEST(lame_enc, directory_empty) {
 
 TEST(lame_enc, directory_invalid) {
   {
-    ASSERT_THROW(vscharf::directory_entries("non_existent_dir"), std::exception);
+    ASSERT_THROW(vscharf::directory_entries("non_existent_dir"s), std::exception);
   }
 }
