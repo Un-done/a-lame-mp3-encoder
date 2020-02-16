@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
-#include <arpa/inet.h> // for 
+#include <arpa/inet.h> // for
 #endif
 
 namespace vscharf {
@@ -19,7 +19,7 @@ namespace vscharf {
 const char* posix_error::what() const noexcept
 {
   LPVOID lpMsgBuf = nullptr;
-  FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+  FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		 FORMAT_MESSAGE_FROM_SYSTEM,
 		 nullptr,
 		 _err,
@@ -75,7 +75,7 @@ private:
   HANDLE dir_ = nullptr;
   WIN32_FIND_DATAA file_;
   std::string path_;
-  
+
 };
 
 #else
@@ -121,76 +121,3 @@ std::vector<std::string> directory_entries(std::string path)
 } // directory_entries
 
 } // namespace vscharf
-
-
-#ifdef TEST_DIR
-// some basic unit testing
-#include <algorithm> // std::equal
-#include <cassert>
-#include <iterator>
-#include <iostream> // cout
-int main()
-{
-  using std::begin;
-  using std::end;
-  {
-    // assumes the test is called in the project root directory
-#ifdef WINDOWS
-    std::vector<std::string> expected = { "test_data\\.gitignore", "test_data\\empty_dir",
-					  "test_data\\sound.wav", "test_data\\sound1.wav",
-					  "test_data\\sound2.wav" };
-#else
-    std::vector<std::string> expected = {
-      "test_data/.", "test_data/..", "test_data/.gitignore", "test_data/empty_dir",
-      "test_data/sound.wav", "test_data/sound1.wav", "test_data/sound2.wav"};
-    std::string dir = "test_data";
-#endif
-    try {
-      std::vector<std::string> actual = vscharf::directory_entries("test_data");
-      std::sort(begin(actual), end(actual));
-      assert(expected.size() == actual.size());
-      assert(std::equal(begin(expected), end(expected), begin(actual)));
-    } catch (const vscharf::posix_error& p) {
-      std::cerr << p.what() << std::endl;
-      assert(false && "Exception thrown");
-    } catch (...) {
-      assert(false && "Exception thrown");
-    }
-  }
-
-  {
-    // assumes the test is called in the project root directory
-#ifdef WINDOWS
-    std::vector<std::string> expected = {};
-#else
-    std::vector<std::string> expected = {
-      "test_data/empty_dir/.", "test_data/empty_dir/.." };
-#endif
-    try {
-#ifdef WINDOWS
-      std::vector<std::string> actual = vscharf::directory_entries("test_data\\empty_dir");
-#else
-      std::vector<std::string> actual = vscharf::directory_entries("test_data/empty_dir");
-#endif
-      std::sort(begin(actual), end(actual));
-      assert(std::equal(begin(expected), end(expected), begin(actual)));
-    } catch(...) {
-      assert(false && "Exception thrown");
-    }
-  }
-
-  {
-    // assumes the test is called in the project root directory
-    try {
-      std::vector<std::string> actual = vscharf::directory_entries("non_existent_dir");
-    } catch(const vscharf::posix_error&) {
-      std::cout << "Test finished successfully!" << std::endl;
-      return 0;
-    }
-    assert(false && "Expected exception");
-  }
-  
-  // not reachable 
-  return 0;
-} // main
-#endif

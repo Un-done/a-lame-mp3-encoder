@@ -101,7 +101,7 @@ void WavDecoder::decode_wav_header()
 
   // sample size is M-byte with M = block-align / Nchannels
   header_.bytesPerSample = header_.blockAlign / header_.channels;
-  
+
   // skip the rest of the fmt header ...
   in_.ignore(fmt_chunk_size - 16);
 }
@@ -163,37 +163,5 @@ const WavDecoder::char_buffer& WavDecoder::read_samples(uint32_t nsamples)
 
   return buf_;
 }
-  
+
 } // namespace vscharf
-
-#ifdef TEST_WAV
-// some basic unit testing
-#include <cassert>
-#include <fstream>
-#include <iostream>
-int main(int argc, char* argv[]) {
-  std::ifstream input_file("test_data/sound.wav");
-  vscharf::WavDecoder w(input_file);
-  assert(w.get_header().channels == 1);
-  assert(w.get_header().samplesPerSec == 44100);
-  assert(w.get_header().avgBytesPerSec == 0x15888);
-  assert(w.get_header().blockAlign == 0x2);
-  assert(w.get_header().bitsPerSample == 16);
-
-  std::size_t nsamples = 0;
-
-  const auto& buf = w.read_samples(1);
-  ++nsamples;
- 
-  while(w.has_next()) {
-    const auto& buf = w.read_samples(10);
-    if(w.has_next()) assert(buf.size() == 10);
-    nsamples += buf.size();
-  }
-
-  std::cout << nsamples << std::endl;
-  assert(nsamples == 0x10266 / 2);
-
-  std::cout << "Test finished successfully!" << std::endl;
-}
-#endif // TEST_WAV
