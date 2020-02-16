@@ -43,8 +43,12 @@ std::vector<std::filesystem::path> directory_entries(std::filesystem::path path)
     std::filesystem::recursive_directory_iterator dir_iter(path);
 
     for (auto const& p : dir_iter) {
-        // TODO - Filter for filetypes here
-        entries.push_back(p);
+        if (p.is_regular_file()) {
+            auto path = p.path();
+            if (path.has_extension() && path.extension() == ".wav") {
+                entries.push_back(std::move(path));
+            }
+        }
     }
 
     return entries;

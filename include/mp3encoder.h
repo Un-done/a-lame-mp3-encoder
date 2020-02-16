@@ -39,7 +39,9 @@ class Mp3Encoder {
     void encode(WavDecoder& in, std::ostream& output, uint32_t nsamples = 0);
 
     private:
-    lame_global_flags* gfp_;
+    lame_global_flags* gfp_; // This USED to set global (external) variables. This is not the
+                             // case for newer versions anymore. Therefor it is ok to create this
+                             // for each instance.
     int quality_;
     char_buffer buf_;
 };

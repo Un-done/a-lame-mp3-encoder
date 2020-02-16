@@ -7,8 +7,9 @@
 using namespace vscharf;
 
 Mp3Encoder::Mp3Encoder(int quality) : gfp_(lame_init()), quality_(quality) {
-    if (!gfp_)
+    if (!gfp_) {
         throw lame_error("Call to lame_init() failed!");
+    }
 }
 
 Mp3Encoder::~Mp3Encoder() {
@@ -19,19 +20,22 @@ Mp3Encoder::~Mp3Encoder() {
 // once. If nsamples is zero it will be chosen such that 4k bytes will
 // be processed at once.
 void Mp3Encoder::encode(WavDecoder& in, std::ostream& out, uint32_t nsamples /* = 0 */) {
-    if (!out)
+    if (!out) {
         throw decoder_error("Invalid output stream!");
+    }
 
     // initialize lame
     lame_set_num_channels(gfp_, in.get_header().channels);
     lame_set_in_samplerate(gfp_, in.get_header().samplesPerSec);
     lame_set_quality(gfp_, quality_);
-    if (lame_init_params(gfp_) < 0)
+    if (lame_init_params(gfp_) < 0) {
         throw lame_error("lame initialization failed!");
+    }
 
     // auto-determine sample size
-    if (!nsamples)
+    if (!nsamples) {
         nsamples = 4096 / in.get_header().bytesPerSample;
+    }
     buf_.resize(1.25 * nsamples + 7200); // worst-case estimate from lame/API
 
     // the actual encoding
@@ -54,17 +58,20 @@ void Mp3Encoder::encode(WavDecoder& in, std::ostream& out, uint32_t nsamples /* 
                                    buf_.size());
         }
 
-        if (n < 0)
+        if (n < 0) {
             throw decoder_error("lame_encode_buffer returned error!");
-        if (!out.write(buf_.data(), n))
+        }
+        if (!out.write(buf_.data(), n)) {
             throw decoder_error("Writing to output failed!");
+        }
     }
 
     // flush the rest
     buf_.resize(7200);
     auto n = lame_encode_flush(gfp_, reinterpret_cast<unsigned char*>(&buf_[0]), buf_.size());
-    if (n < 0)
+    if (n < 0) {
         throw decoder_error("lame_encode_flush returned error!");
-    if (n > 0 && !out.write(buf_.data(), n))
+    } else if (n > 0 && !out.write(buf_.data(), n)) {
         throw decoder_error("Writing to output failed!");
+    }
 }

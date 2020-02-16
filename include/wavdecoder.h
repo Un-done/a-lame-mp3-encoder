@@ -7,6 +7,9 @@
 #include <stdexcept>
 #include <vector>
 
+#include <cassert>
+#include <iostream>
+#include <limits>
 namespace vscharf {
 
 // ======== exceptions ========
@@ -37,10 +40,9 @@ class WavDecoder {
         return header_;
     }
     bool has_next() const {
-        in_.peek();
+        in_.peek(); // make sure eof is triggered
         return in_.good();
     }
-    // make sure eof is triggered --^
 
     // Read up to nsamples samples (default = 1). The size of
     // char_buffer will represent the actual number of samples read. The

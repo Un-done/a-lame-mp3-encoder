@@ -17,11 +17,11 @@ TEST(lame_enc, wavdecoder) {
 
     const auto& buf = w.read_samples(1);
     ++nsamples;
-
     while (w.has_next()) {
         const auto& buf = w.read_samples(10);
-        if (w.has_next())
+        if (w.has_next()) {
             assert(buf.size() == 10);
+        }
         nsamples += buf.size();
     }
 

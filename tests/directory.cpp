@@ -8,9 +8,7 @@
 using namespace std::literals::string_literals;
 
 TEST(lame_enc, directory) {
-    std::vector<std::string> expected = {LAME_ENC_TEST_DATA_DIR "/.gitignore",
-                                         LAME_ENC_TEST_DATA_DIR "/empty_dir",
-                                         LAME_ENC_TEST_DATA_DIR "/sound.wav",
+    std::vector<std::string> expected = {LAME_ENC_TEST_DATA_DIR "/sound.wav",
                                          LAME_ENC_TEST_DATA_DIR "/sound1.wav",
                                          LAME_ENC_TEST_DATA_DIR "/sound2.wav"};
 

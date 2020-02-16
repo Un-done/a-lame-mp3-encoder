@@ -9,44 +9,44 @@
 
 #include "directory.h"
 #include "mp3encoder.h"
-#include "pthread_wrapper.h"
 #include "wavdecoder.h"
 
-using namespace vscharf;
+#include <mutex>
+#include <thread>
 
-const int QUALITY = 2; // recommended (good) quality setting
-const int NTHREADS = 4;
+using namespace vscharf;
 
 // Function for encoding a file taken from the (condition-protected)
 // list of files-names available_files. After no file is left
 // decreases the (again condition-protected) number of available
 // threads.
 namespace EncodeFiles {
-void* do_work(void* args) {
-    using value_type = std::vector<std::string>;
-    auto& available_files = *((mutex_protected<value_type>*) args);
+void do_work(std::mutex& mut, std::vector<std::filesystem::path> available_files) {
     while (1) {
-        scoped_lock<value_type> lock = available_files.acquire();
-        if (lock.get().empty())
-            return nullptr; // no more work to do
-
-        auto infilename = lock.get().back();
-        lock.get().pop_back();
-        lock.unlock();
+        std::filesystem::path infile_path;
+        {
+            std::scoped_lock gurad(mut);
+            if (available_files.empty()) {
+                return;
+            }
+            infile_path = available_files.back();
+            available_files.pop_back();
+        }
 
         // do the encoding
-        std::string outfilename(infilename);
-        outfilename.replace(outfilename.size() - 3, 3, "mp3");
+        std::filesystem::path outfile_path(infile_path);
+        outfile_path.replace_extension(".mp3");
 
-        std::ifstream infile(infilename);
-        std::ofstream outfile(outfilename);
+        std::ifstream infile(infile_path);
+        std::ofstream outfile(outfile_path);
+        // todo open?
 
         WavDecoder wav(infile);
-        Mp3Encoder mp3(QUALITY);
+        Mp3Encoder mp3(2);
         mp3.encode(wav, outfile);
     }
     // not reachable
-    return nullptr;
+    return;
 } // do_work
 } // namespace EncodeFiles
 
@@ -59,36 +59,26 @@ int main(int argc, char* argv[]) {
         return 2;
     }
 
-    std::string dir(argv[1]);
-    std::vector<std::string> wav_files;
-    const auto& dir_entries = directory_entries(dir);
-    std::copy_if(std::begin(dir_entries),
-                 std::end(dir_entries),
-                 std::back_inserter(wav_files),
-                 [](const std::string& entry) -> bool {
-                     return entry.size() > 4 && entry.substr(entry.size() - 4) == ".wav";
-                 });
+    std::filesystem::path dir(argv[1]);
+    std::vector<std::filesystem::path> wav_files = directory_entries(dir);
 
 
     // mutex protected list of remaining files
     const std::size_t n_wav_files = wav_files.size();
-    mutex_protected<std::vector<std::string>> available_files(wav_files);
+    std::vector<std::filesystem::path> available_files(wav_files);
+    std::mutex mut;
 
     // do the work on (joinable) threads
-    scoped_pthread_attr attr;
-    pthread_attr_setdetachstate(attr.get(), PTHREAD_CREATE_JOINABLE);
-    std::array<pthread_t, NTHREADS> threads;
-    for (auto& t : threads) {
-        int rc = pthread_create(&t, attr.get(), EncodeFiles::do_work, (void*) &available_files);
-        if (rc) {
-            std::cerr << "Couldn't create thread with error " << rc << std::endl;
-            return 3;
-        }
+    std::vector<std::thread> threads;
+    for (std::size_t i = 0; i < std::thread::hardware_concurrency(); ++i) {
+        threads.emplace_back([&mut, &available_files]() {
+            EncodeFiles::do_work(mut, available_files);
+        });
     }
 
     // wait for all threads to finish
     for (auto& t : threads) {
-        pthread_join(t, nullptr); // ignore error code as we will exit anyways
+        t.join();
     }
 
     std::cout << "Successfully converted " << n_wav_files << " WAV files to mp3." << std::endl;
