@@ -9,11 +9,12 @@
 #include "wavdecoder.h"
 
 using namespace vscharf;
+namespace fs = std::filesystem;
 
 // Function for encoding a file
 void do_work(std::filesystem::path const &infile_path) {
         // do the encoding
-        std::filesystem::path outfile_path(infile_path);
+    auto outfile_path = infile_path;
         outfile_path.replace_extension(".mp3");
 
         std::ifstream infile(infile_path);
@@ -33,10 +34,7 @@ int main(int argc, char* argv[]) {
         std::cerr << argv[0] << ": too many directory operands" << std::endl;
         return 2;
     }
-
-    std::filesystem::path dir(argv[1]);
-    std::vector<std::filesystem::path> wav_files = directory_entries(dir);
-
+    fs::path dir(argv[1]);
 
     auto wav_files = directory_entries(dir);
 
