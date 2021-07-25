@@ -24,8 +24,6 @@ class lame_error : public std::runtime_error {
 // Objects of this class are not thread-safe.
 class Mp3Encoder {
     public:
-    using char_buffer = std::string;
-
     // lame quality setting: 0 = best ... 9 = worst
     Mp3Encoder(int quality);
     ~Mp3Encoder();
@@ -43,7 +41,6 @@ class Mp3Encoder {
                              // case for newer versions anymore. Therefor it is ok to create this
                              // for each instance.
     int quality_;
-    char_buffer buf_;
 };
 
 } // namespace vscharf

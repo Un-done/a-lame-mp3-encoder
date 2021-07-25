@@ -36,7 +36,7 @@ void Mp3Encoder::encode(WavDecoder& in, std::ostream& out, uint32_t nsamples /* 
     if (!nsamples) {
         nsamples = 4096 / in.get_header().bytesPerSample;
     }
-    buf_.resize(1.25 * nsamples + 7200); // worst-case estimate from lame/API
+    std::vector<char> buf(1.25 * nsamples + 7200); // worst-case estimate from lame/API
 
     // the actual encoding
     while (in.has_next()) {
@@ -47,31 +47,30 @@ void Mp3Encoder::encode(WavDecoder& in, std::ostream& out, uint32_t nsamples /* 
             n = lame_encode_buffer_interleaved(gfp_,
                                                const_cast<int16_t*>(&inbuf[0]),
                                                inbuf.size() / in.get_header().channels,
-                                               reinterpret_cast<unsigned char*>(&buf_[0]),
-                                               buf_.size());
+                                               reinterpret_cast<unsigned char*>(buf.data()),
+                                               buf.size());
         } else {
             n = lame_encode_buffer(gfp_,
                                    const_cast<int16_t*>(&inbuf[0]),
                                    nullptr,
                                    inbuf.size(),
-                                   reinterpret_cast<unsigned char*>(&buf_[0]),
-                                   buf_.size());
+                                   reinterpret_cast<unsigned char*>(buf.data()),
+                                   buf.size());
         }
-
         if (n < 0) {
             throw decoder_error("lame_encode_buffer returned error!");
         }
-        if (!out.write(buf_.data(), n)) {
+        if (!out.write(buf.data(), n)) {
             throw decoder_error("Writing to output failed!");
         }
     }
 
-    // flush the rest
-    buf_.resize(7200);
-    auto n = lame_encode_flush(gfp_, reinterpret_cast<unsigned char*>(&buf_[0]), buf_.size());
+    //flush the rest
+    buf.resize(7200);
+    auto n = lame_encode_flush(gfp_, reinterpret_cast<unsigned char*>(buf.data()), buf.size());
     if (n < 0) {
         throw decoder_error("lame_encode_flush returned error!");
-    } else if (n > 0 && !out.write(buf_.data(), n)) {
+    } else if (n > 0 && !out.write(buf.data(), n)) {
         throw decoder_error("Writing to output failed!");
     }
 }
