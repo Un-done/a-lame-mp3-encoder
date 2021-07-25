@@ -140,7 +140,7 @@ const WavDecoder::char_buffer& WavDecoder::read_samples(uint32_t nsamples) {
     }
 
     // make sure there is enough space in the buffer to accomodate nsamples
-    buf_.resize(nsamples * header_.channels, 0);
+    buf_.resize(static_cast<size_t>(nsamples) * header_.channels, 0);
 
     // in case not enough samples are available to fully fill buf_ with nsamples_
     if (buf_.size() * header_.bytesPerSample > remaining_chunk_size_) {
