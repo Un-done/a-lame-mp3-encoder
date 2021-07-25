@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-set -x
-clang-format-9 -i src/* include/* tests/*cpp
