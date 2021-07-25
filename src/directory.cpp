@@ -16,9 +16,17 @@ auto directory_entries(std::filesystem::path const &path) -> std::vector<std::fi
 
     for (auto const& p : dir_iter) {
         if (p.is_regular_file()) {
-            auto path = p.path();
-            if (path.has_extension() && path.extension() == ".wav") {
-                entries.push_back(std::move(path));
+            auto filePath = p.path();
+            if (filePath.has_extension()) {
+                auto extension = filePath.extension().string();
+                // Transform to lowercase to get all variations of wav
+                // Will work until non-Ascii characters are used and modulo to "wav"
+                std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) {
+                    return std::tolower(c);
+                });
+                if (extension == ".wav") {
+                    entries.push_back(std::move(filePath));
+                }
             }
         }
     }
