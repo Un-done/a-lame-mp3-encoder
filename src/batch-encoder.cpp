@@ -28,13 +28,20 @@ void do_work(std::filesystem::path const &infile_path) {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << argv[0] << ": missing directory operand" << std::endl;
+        std::cerr << argv[0] << ": missing directory operand\n";
+        std::cerr << "Usage: " << argv[0] << R"( "folder/with/wavs")" << std::endl;
         return 1;
     } else if (argc > 2) {
-        std::cerr << argv[0] << ": too many directory operands" << std::endl;
+        std::cerr << argv[0] << ": too many directory operands\n";
+        std::cerr << "Usage: " << argv[0] << R"( "folder/with/wavs")" << std::endl;
         return 2;
     }
     fs::path dir(argv[1]);
+    if (!fs::exists(dir)) {
+        std::cerr << "Invalid path given\n";
+        std::cerr << "Usage: " << argv[0] << R"( "folder/with/wavs")" << std::endl;
+        return 3;
+    }
 
     auto wav_files = directory_entries(dir);
 
