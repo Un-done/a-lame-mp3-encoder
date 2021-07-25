@@ -17,9 +17,8 @@ void do_work(std::filesystem::path const &infile_path) {
     auto outfile_path = infile_path;
         outfile_path.replace_extension(".mp3");
 
-        std::ifstream infile(infile_path);
-        std::ofstream outfile(outfile_path);
-        // todo open?
+    std::ifstream infile(infile_path, std::ios::binary);
+    std::ofstream outfile(outfile_path, std::ios::binary);
 
         WavDecoder wav(infile);
         Mp3Encoder mp3(2);
