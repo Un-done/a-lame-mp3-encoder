@@ -2,7 +2,7 @@
 #ifndef ALAMEMP3ENCODER_MP3DECODER_H
 #define ALAMEMP3ENCODER_MP3DECODER_H
 
-#include "lame/lame.h"
+#include "lame.h"
 #include <cstdint>
 #include <iosfwd>
 #include <stdexcept>

@@ -1,3 +1,6 @@
 [submodule "external_libraries/googletest"]
 	path = external_libraries/googletest
 	url = https://github.com/google/googletest
+[submodule "external_libraries/lame"]
+	path = external_libraries/lame
+	url = https://github.com/Iunusov/libmp3lame-CMAKE.git
